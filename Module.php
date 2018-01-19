@@ -10,10 +10,10 @@
 namespace CgmConfigAdmin;
 
 use CgmConfigAdmin\View\Helper\CgmFlashMessages;
+use Psr\Container\ContainerInterface;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\ModuleManager\Feature\ServiceProviderInterface;
-use Zend\Mvc\ModuleRouteListener;
 use Zend\Session\Container as SessionContainer;
 
 class Module implements
@@ -58,37 +58,39 @@ class Module implements
 
     public function getServiceConfig()
     {
-        return array(
-            'invokables' => array(
-                'cgmconfigadmin'                    => 'CgmConfigAdmin\Service\ConfigAdmin',
-                'cgmconfigadmin_form'               => 'CgmConfigAdmin\Form\ConfigOptionsForm',
-                'cgmconfigadmin_configgroup'        => 'CgmConfigAdmin\Model\ConfigGroup',
-                'cgmconfigadmin_configoption'       => 'CgmConfigAdmin\Model\ConfigOption',
-                'cgmconfigadmin_configgroupfactory' => 'CgmConfigAdmin\Model\ConfigGroupFactory',
-            ),
+        return [
+            'invokables' => [
+                'cgmconfigadmin_form' => Form\ConfigOptionsForm::class,
+                'cgmconfigadmin_configgroup' => Model\ConfigGroup::class,
+                'cgmconfigadmin_configoption' => Model\ConfigOption::class,
+                'cgmconfigadmin_configgroupfactory' => Model\ConfigGroupFactory::class,
+            ],
 
-            'shared' => array(
+            'shared' => [
                 'cgmconfigadmin_configgroup'  => false,
                 'cgmconfigadmin_configoption' => false,
-            ),
+            ],
 
-            'factories' => array(
+            'factories' => [
+                'cgmconfigadmin' => function(ContainerInterface $sm){
+                    return new Service\ConfigAdmin($sm);
+                },
                 // Configuration options for entire module
                 'cgmconfigadmin_module_options' => function($sm) {
                     $config = $sm->get('Config');
                     return new Options\ModuleOptions(
-                        isset($config['cgmconfigadmin']) ? $config['cgmconfigadmin'] : array()
+                        isset($config['cgmconfigadmin']) ? $config['cgmconfigadmin'] : []
                     );
                 },
 
                 // Session container
-                'cgmconfigadmin_session' => function($sm) {
+                'cgmconfigadmin_session' => function() {
                     $session = new SessionContainer('cgmconfigadmin');
                     return $session;
                 },
 
                 // Data Mapper for config values
-                'cgmconfigadmin_configvalues_mapper' => function ($sm) {
+                'cgmconfigadmin_configvalues_mapper' => function (ContainerInterface $sm) {
                     /** @var $options Options\ModuleOptions */
                     $options = $sm->get('cgmconfigadmin_module_options');
 
@@ -103,7 +105,7 @@ class Module implements
                 // Example Per-user settings
                 // * Requires ZfcUser *
                 /*
-                'cgmconfigadmin_userconfig' => function($sm) {
+                'cgmconfigadmin_userconfig' => function(ContainerInterface $sm) {
                     $authService = $sm->get('zfcuser_auth_service');
                     $userId = null;
                     if ($authService->hasIdentity()) {
@@ -114,8 +116,8 @@ class Module implements
                     return $service;
                 }
                 */
-            ),
-        );
+            ],
+        ];
     }
 
 }

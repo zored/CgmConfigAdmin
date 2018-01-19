@@ -40,7 +40,7 @@ class ConfigGroupFactory
         $configOptions = $configOptions[$context];
         $configGroups  = $configGroups[$context];
 
-        $groups = array();
+        $groups = [];
         foreach ($configGroups as $id => $group) {
             $configGroup = $services->get('cgmconfigadmin_configgroup');
             $configGroup->setId($id)->setOptions($group);
@@ -50,9 +50,9 @@ class ConfigGroupFactory
             $configGroup = $services->get('cgmconfigadmin_configgroup');
             $configGroup
                 ->setId('default')
-                ->setOptions(array(
+                ->setOptions([
                     'label' => 'Settings',
-                ));
+                ]);
             $groups['default'] = $configGroup;
         }
 

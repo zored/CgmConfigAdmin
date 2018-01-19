@@ -29,8 +29,8 @@ class ConfigValuesHydrator extends ClassMethods
         }
         /* @var $object ConfigValues*/
         $data = parent::extract($object);
-        $data = $this->mapField('id',     'configvalues_id', $data);
-        $data = $this->mapField('values', 'configvalues',    $data);
+        $data = $this->mapField('id', 'configvalues_id', $data);
+        $data = $this->mapField('values', 'configvalues', $data);
         return $data;
     }
 
@@ -49,8 +49,8 @@ class ConfigValuesHydrator extends ClassMethods
                 '$object must be an instance of CgmConfigAdmin\Entity\ConfigValues'
             );
         }
-        $data = $this->mapField('configvalues_id', 'id',     $data);
-        $data = $this->mapField('configvalues',    'values', $data);
+        $data = $this->mapField('configvalues_id', 'id', $data);
+        $data = $this->mapField('configvalues', 'values', $data);
         return parent::hydrate($data, $object);
     }
 

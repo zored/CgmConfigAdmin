@@ -60,5 +60,4 @@ class ConfigValues
     {
         return $this->value;
     }
-
 }

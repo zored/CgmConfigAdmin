@@ -6,21 +6,21 @@
  * @copyright Copyright (c) 2012-2013 Christopher Martin (http://cgmartin.com)
  * @license   New BSD License https://raw.github.com/cgmartin/CgmConfigAdmin/master/LICENSE
  */
+
 namespace CgmConfigAdmin\Service;
 
-use CgmConfigAdmin\Options\ModuleOptions;
-use CgmConfigAdmin\Form\ConfigOptionsForm;
 use CgmConfigAdmin\Entity\ConfigValues;
 use CgmConfigAdmin\Entity\ConfigValuesMapperInterface;
+use CgmConfigAdmin\Form\ConfigOptionsForm;
 use CgmConfigAdmin\Model\ConfigGroup;
 use CgmConfigAdmin\Model\ConfigOption;
-use ZfcBase\EventManager\EventProvider;
-use Zend\ServiceManager\ServiceManagerAwareInterface;
-use Zend\ServiceManager\ServiceManager;
+use CgmConfigAdmin\Options\ModuleOptions;
+use Psr\Container\ContainerInterface;
+use Traversable;
 use Zend\Session\Container as SessionContainer;
+use ZfcBase\EventManager\EventProvider;
 
-
-class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
+final class ConfigAdmin extends EventProvider
 {
     /**
      * @var string
@@ -31,11 +31,6 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
      * @var string
      */
     protected $userId;
-
-    /**
-     * @var ServiceManager
-     */
-    protected $serviceManager;
 
     /**
      * @var ModuleOptions
@@ -55,7 +50,7 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
     /**
      * @var array
      */
-    protected $configGroups = array();
+    protected $configGroups = [];
 
     /**
      * @var ConfigOptionsForm
@@ -66,19 +61,20 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
      * @var bool
      */
     protected $isPreviewEnabled = true;
-
     /**
-     * @param string      $context Optional the config context (site, user, etc.)
-     * @param string|null $userId  Optional for per-user config values
+     * @var ContainerInterface
      */
-    public function __construct($context = 'site', $userId = null)
+    private $container;
+
+    public function __construct(ContainerInterface $container, $context = 'site', $userId = null)
     {
         $this->context = $context;
-        $this->userId  = $userId;
+        $this->userId = $userId;
+        $this->container = $container;
     }
 
     /**
-     * @param  string $groupId  The group id, or format 'groupName\optionName'
+     * @param  string $groupId The group id, or format 'groupName\optionName'
      * @param  string $optionId (optional) The option id
      * @return mixed
      */
@@ -101,7 +97,8 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
 
         throw new Exception\InvalidArgumentException(sprintf(
             'Config Value does not exist with the $groupId/$optionId combination (%s/%s)',
-            $groupId, $optionId
+            $groupId,
+            $optionId
         ));
     }
 
@@ -120,7 +117,9 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
         $config = new \ArrayObject($form->getData());
 
         $this->getEventManager()->trigger(
-            __FUNCTION__, $this,  array('configValues' => $config)
+            __FUNCTION__,
+            $this,
+            ['configValues' => $config]
         );
 
         $contextKey = $this->getContextKey();
@@ -130,7 +129,9 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
         $this->applyValuesToConfigGroups($config, $configGroups);
 
         $this->getEventManager()->trigger(
-            __FUNCTION__.'.post', $this, array('configValues' => $config)
+            __FUNCTION__ . '.post',
+            $this,
+            ['configValues' => $config]
         );
 
         return true;
@@ -144,15 +145,18 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
         $contextKey = $this->getContextKey();
 
         $this->getEventManager()->trigger(
-            __FUNCTION__, $this,
-            array('configValues' => $this->getSession()->$contextKey)
+            __FUNCTION__,
+            $this,
+            ['configValues' => $this->getSession()->$contextKey]
         );
 
         unset($this->getSession()->$contextKey);
         $this->resetConfigGroups();
 
         $this->getEventManager()->trigger(
-            __FUNCTION__.'.post', $this, array()
+            __FUNCTION__ . '.post',
+            $this,
+            []
         );
 
         return $this;
@@ -177,8 +181,8 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
 
         $configValues = new \ArrayObject();
         /** @var ConfigGroup $group */
-        foreach($configGroups as $group) {
-            /** @var ConfigOption $option  */
+        foreach ($configGroups as $group) {
+            /** @var ConfigOption $option */
             foreach ($group->getConfigOptions() as $option) {
                 if ($option->hasValueChanged()) {
                     $configValues[$option->getUniqueId()] = $option->getValue();
@@ -187,7 +191,9 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
         }
 
         $this->getEventManager()->trigger(
-            __FUNCTION__, $this, array('configValues' => $configValues)
+            __FUNCTION__,
+            $this,
+            ['configValues' => $configValues]
         );
 
         $contextKey = $this->getContextKey();
@@ -201,7 +207,9 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
         unset($this->getSession()->$contextKey);
 
         $this->getEventManager()->trigger(
-            __FUNCTION__.'.post', $this, array('configValues' => $configValues)
+            __FUNCTION__ . '.post',
+            $this,
+            ['configValues' => $configValues]
         );
         return true;
     }
@@ -213,8 +221,10 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
     {
         if (!$this->configGroups) {
             $factory = $this->getServiceManager()->get('cgmconfigadmin_configgroupfactory');
-            $groups  = $factory->createConfigGroups(
-                $this->getServiceManager(), $this->getOptions(), $this->context
+            $groups = $factory->createConfigGroups(
+                $this->getServiceManager(),
+                $this->getOptions(),
+                $this->context
             );
 
             $contextKey = $this->getContextKey();
@@ -226,8 +236,8 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
                 $configValues = unserialize($configValue->getValues());
 
                 /** @var ConfigGroup $group */
-                foreach($groups as $group) {
-                    /** @var ConfigOption $option  */
+                foreach ($groups as $group) {
+                    /** @var ConfigOption $option */
                     foreach ($group->getConfigOptions() as $option) {
                         $uniqId = $option->getUniqueId();
                         if (isset($configValues[$uniqId])) {
@@ -259,48 +269,6 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
     }
 
     /**
-     * @return string
-     */
-    protected function getContextKey()
-    {
-        $key = $this->context;
-        if (isset($this->userId)) {
-            $key .= "-" . $this->userId;
-        }
-        return $key;
-    }
-
-    /**
-     * @param array|\ArrayAccess $values
-     * @param array|\Traversable $groups
-     *
-     * @return ConfigAdmin
-     */
-    protected function applyValuesToConfigGroups($values, $groups)
-    {
-        /** @var $group ConfigGroup */
-        foreach ($groups as $id => $group) {
-            if (isset($values[$id])) {
-                $group->setValues($values[$id]);
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * @return ConfigAdmin
-     */
-    protected function resetConfigGroups()
-    {
-        $configGroups = $this->getConfigGroups();
-        /** @var $group ConfigGroup */
-        foreach($configGroups as $group){
-            $group->resetToDefaultValues();
-        }
-        return $this;
-    }
-
-    /**
      * @return ConfigOptionsForm
      */
     public function getConfigOptionsForm()
@@ -321,7 +289,6 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
      */
     public function setConfigOptionsForm(ConfigOptionsForm $form)
     {
-
         $this->configOptionsForm = $form;
         return $this;
     }
@@ -397,23 +364,11 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
     /**
      * Retrieve service manager instance
      *
-     * @return ServiceManager
+     * @return ContainerInterface
      */
     public function getServiceManager()
     {
-        return $this->serviceManager;
-    }
-
-    /**
-     * Set service manager instance
-     *
-     * @param  ServiceManager $locator
-     * @return ConfigAdmin
-     */
-    public function setServiceManager(ServiceManager $serviceManager)
-    {
-        $this->serviceManager = $serviceManager;
-        return $this;
+        return $this->container;
     }
 
     /**
@@ -431,6 +386,48 @@ class ConfigAdmin extends EventProvider implements ServiceManagerAwareInterface
     public function setIsPreviewEnabled($enabled)
     {
         $this->isPreviewEnabled = $enabled;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getContextKey()
+    {
+        $key = $this->context;
+        if (isset($this->userId)) {
+            $key .= "-" . $this->userId;
+        }
+        return $key;
+    }
+
+    /**
+     * @param array|\ArrayAccess $values
+     * @param array|\Traversable $groups
+     *
+     * @return ConfigAdmin
+     */
+    protected function applyValuesToConfigGroups($values, $groups)
+    {
+        /** @var $group ConfigGroup */
+        foreach ($groups as $id => $group) {
+            if (isset($values[$id])) {
+                $group->setValues($values[$id]);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @return ConfigAdmin
+     */
+    protected function resetConfigGroups()
+    {
+        $configGroups = $this->getConfigGroups();
+        /** @var $group ConfigGroup */
+        foreach ($configGroups as $group) {
+            $group->resetToDefaultValues();
+        }
         return $this;
     }
 }

@@ -23,7 +23,7 @@ use Zend\Validator\ValidatorPluginManager;
 class ConfigOptionsForm extends ProvidesEventsForm
 {
     // Maps config option types to elements
-    protected static $elementMappings = array(
+    protected static $elementMappings = [
         'color'         => 'Zend\Form\Element\Color',
         'date'          => 'Zend\Form\Element\Date',
         'datetimelocal' => 'Zend\Form\Element\DateTimeLocal',
@@ -40,7 +40,7 @@ class ConfigOptionsForm extends ProvidesEventsForm
         'time'          => 'Zend\Form\Element\Time',
         'url'           => 'Zend\Form\Element\Url',
         'week'          => 'Zend\Form\Element\Week',
-    );
+    ];
 
     /**
      * @var ValidatorPluginManager
@@ -52,7 +52,7 @@ class ConfigOptionsForm extends ProvidesEventsForm
      * @param  null|int|string  $name    Optional name for the form
      * @param  array            $options Optional array of options
      */
-    public function __construct(array $groups = array(), $name = null, array $options = array())
+    public function __construct(array $groups = [], $name = null, array $options = [])
     {
         $isPreviewEnabled = true;
         if (isset($options['preview_enabled'])) {
@@ -72,7 +72,7 @@ class ConfigOptionsForm extends ProvidesEventsForm
         $this->addActionButtons($isPreviewEnabled);
 
         $csrf = new CsrfElement('csrf');
-        $csrf->setCsrfValidatorOptions(array('timeout' => null));
+        $csrf->setCsrfValidatorOptions(['timeout' => null]);
         $this->add($csrf);
     }
 
@@ -156,7 +156,7 @@ class ConfigOptionsForm extends ProvidesEventsForm
      */
     protected function createConfigGroupElementSpec(ConfigGroup $configGroup)
     {
-        $elementSpec = array();
+        $elementSpec = [];
 
         $elementSpec['type'] = 'Zend\Form\Fieldset';
         $elementSpec['name'] = $configGroup->getId();
@@ -177,7 +177,7 @@ class ConfigOptionsForm extends ProvidesEventsForm
     protected function createConfigOptionElementSpec(ConfigOption $configOption)
     {
         $configOption->prepare();
-        $elementSpec = array();
+        $elementSpec = [];
 
         $type = $configOption->getInputType();
         $elementSpec['type'] = (array_key_exists($type, self::$elementMappings))
@@ -207,13 +207,14 @@ class ConfigOptionsForm extends ProvidesEventsForm
      */
     protected function createConfigGroupInputFilterSpec(ConfigGroup $configGroup)
     {
-        $inputFilters = array(
+        $inputFilters = [
             'type' => 'Zend\InputFilter\InputFilter',
-        );
+        ];
 
         foreach ($configGroup->getConfigOptions() as $id => $configOption) {
             $inputFilters[$id] = $this->createConfigOptionInputFilterSpec(
-                $configOption, $configGroup->getId()
+                $configOption,
+                $configGroup->getId()
             );
         }
         return $inputFilters;
@@ -231,7 +232,7 @@ class ConfigOptionsForm extends ProvidesEventsForm
         if ($element instanceof InputProviderInterface) {
             $inputSpec = $element->getInputSpecification();
         } else {
-            $inputSpec = array();
+            $inputSpec = [];
             $inputSpec['name'] = $configOption->getId();
         }
 

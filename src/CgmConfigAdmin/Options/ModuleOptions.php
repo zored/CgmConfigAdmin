@@ -26,12 +26,12 @@ class ModuleOptions extends AbstractOptions
     /**
      * @var array
      */
-    protected $configOptions = array();
+    protected $configOptions = [];
 
     /**
      * @var array
      */
-    protected $configGroups = array();
+    protected $configGroups = [];
 
     /**
      * @param  string $tableName
@@ -86,5 +86,4 @@ class ModuleOptions extends AbstractOptions
     {
         return $this->configGroups;
     }
-
 }

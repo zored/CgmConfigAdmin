@@ -39,20 +39,18 @@ class ConfigOptionsController extends AbstractActionController
                     $message = '<strong>Ready to preview</strong> ';
                     $message .= 'You may navigate the site to test your changes. ';
                     $message .= '<div><em>The changes will not be made permanent until saved.</em></div>';
-                    $message = array('message' => $message, 'type' => 'info');
+                    $message = ['message' => $message, 'type' => 'info'];
                     $successful = true;
                 }
-
-            } else if (!empty($config['reset'])) {
+            } elseif (!empty($config['reset'])) {
                 $service->resetConfigValues();
                 $message = '<strong>Preview Settings have been reset</strong> ';
-                $message = array('message' => $message);
+                $message = ['message' => $message];
                 $successful = true;
-
-            } else if (!empty($config['save'])) {
+            } elseif (!empty($config['save'])) {
                 if ($service->saveConfigValues($config)) {
                     $message = '<strong>Settings have been saved</strong> ';
-                    $message = array('message' => $message, 'type' => 'success');
+                    $message = ['message' => $message, 'type' => 'success'];
                     $successful = true;
                 }
             }
@@ -64,9 +62,9 @@ class ConfigOptionsController extends AbstractActionController
                 return $this->redirect()->toRoute();
             }
         }
-        return array(
+        return [
             'form' => $service->getConfigOptionsForm(),
-        );
+        ];
     }
 
     /**
@@ -89,5 +87,4 @@ class ConfigOptionsController extends AbstractActionController
         $this->configAdminService = $service;
         return $this;
     }
-
 }

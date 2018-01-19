@@ -24,13 +24,13 @@ class ConfigValuesMapper extends AbstractDbMapper implements ConfigValuesMapperI
     public function find($id)
     {
         $select = $this->getSelect()
-            ->where(array('configvalues_id' => $id));
+            ->where(['configvalues_id' => $id]);
 
         $resultSet = $this->select($select);
 
         if ($resultSet->count()) {
             $configValue = $resultSet->current();
-            $this->getEventManager()->trigger('find', $this, array('configValue' => $configValue));
+            $this->getEventManager()->trigger('find', $this, ['configValue' => $configValue]);
             return $configValue;
         }
         return null;
@@ -43,7 +43,7 @@ class ConfigValuesMapper extends AbstractDbMapper implements ConfigValuesMapperI
     public function save($configValues)
     {
         if ($this->find($configValues->getId())) {
-            $this->update($configValues, array('configvalues_id' => $configValues->getId()));
+            $this->update($configValues, ['configvalues_id' => $configValues->getId()]);
         } else {
             $this->insert($configValues);
         }

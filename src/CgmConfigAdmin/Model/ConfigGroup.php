@@ -31,7 +31,7 @@ class ConfigGroup extends AbstractOptions
     /**
      * @var array
      */
-    protected $configOptions = array();
+    protected $configOptions = [];
 
     /**
      * @param string                $id

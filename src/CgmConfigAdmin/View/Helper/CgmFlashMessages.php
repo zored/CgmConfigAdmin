@@ -8,6 +8,7 @@
  */
 
 namespace CgmConfigAdmin\View\Helper;
+
 use Zend\View\Helper\AbstractHelper;
 use Zend\Mvc\Controller\Plugin\FlashMessenger;
 

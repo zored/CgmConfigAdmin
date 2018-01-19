@@ -16,10 +16,10 @@ class Util
         // Convert camelCase or dash-string or under_score ids to a
         // human readable label for convenience
         $label = preg_replace(
-            array(
+            [
                  '/(?<=[^A-Z])([A-Z])/',
                  '/(?<=[^0-9])([0-9])/',
-            ),
+            ],
             ' $0',
             $id
         );

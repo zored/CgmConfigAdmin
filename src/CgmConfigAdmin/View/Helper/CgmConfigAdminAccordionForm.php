@@ -53,7 +53,6 @@ class CgmConfigAdminAccordionForm extends AbstractHelper
         $output .= $errorsHelper($form->get('csrf'));
 
         foreach ($form->getFieldsets() as $fieldset) {
-
             if ($form->getNumFieldsets() > 1) {
                 $output .= $this->renderSectionHeader($fieldset);
             }
@@ -117,14 +116,14 @@ class CgmConfigAdminAccordionForm extends AbstractHelper
         $errorClass = (!empty($errors)) ? ' error' : '';
 
         $output = '<div class="control-group' . $errorClass . '">';
-        $output .= $labelHelper($element->setLabelAttributes(array('class' => 'control-label')));
+        $output .= $labelHelper($element->setLabelAttributes(['class' => 'control-label']));
         $output .= '<div class="controls">';
 
-        $labelAttributes = array();
+        $labelAttributes = [];
         if ($element instanceof RadioElement) {
-            $labelAttributes = array('class' => 'radio inline');
+            $labelAttributes = ['class' => 'radio inline'];
         } elseif ($element instanceof MultiCheckboxElement) {
-            $labelAttributes = array('class' => 'checkbox inline');
+            $labelAttributes = ['class' => 'checkbox inline'];
         }
         $output .= $elementHelper($element->setLabelAttributes($labelAttributes));
         $output .= $errorsHelper($element);

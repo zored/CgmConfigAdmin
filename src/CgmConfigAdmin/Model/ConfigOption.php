@@ -301,9 +301,9 @@ class ConfigOption extends AbstractOptions
                 $this->setDefaultValue($defaultValue);
             }
         } elseif ('radio' === $type) {
-            $valueOptions = array(
+            $valueOptions = [
                 '1' => 'Yes', '' => 'No',
-            );
+            ];
             $this->setValueOptions($valueOptions);
             if (null === $defaultValue) {
                 $defaultValue = '';
@@ -320,7 +320,7 @@ class ConfigOption extends AbstractOptions
      */
     public function getValueOptionValues($includeEmpty = false)
     {
-        $values = array();
+        $values = [];
         $options = $this->getValueOptions();
         foreach ($options as $key => $optionSpec) {
             if (is_array($optionSpec) && array_key_exists('options', $optionSpec)) {
